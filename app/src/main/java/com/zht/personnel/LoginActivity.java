@@ -131,4 +131,9 @@ public class LoginActivity extends AppCompatActivity {
         button = findViewById(R.id.button);
     }
 
+    @Override
+    protected void onPause() {
+        super.onPause();
+        this.finish();
+    }
 }

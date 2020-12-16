@@ -107,10 +107,13 @@ public class MainActivity extends AppCompatActivity {
      * 初始化view和属性
      */
     public void init() {
+        Intent intent = getIntent();
         recyclerView = findViewById(R.id.home_recycler_view);
         number = findViewById(R.id.bottom_count2);
         homeTitle = findViewById(R.id.home_title);
+        homeTitle.setText(intent.getStringExtra("title"));
         warehouseName = findViewById(R.id.warehouse_name);
+        warehouseName.setText(intent.getStringExtra("warehouse"));
         confirm = findViewById(R.id.button);
         gif = findViewById(R.id.gif);
         list = new ArrayList<>();
