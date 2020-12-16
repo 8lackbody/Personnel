@@ -1,0 +1,14 @@
+<resources>
+    <string name="app_name">Personnel</string>
+    <string name="table_name">姓名</string>
+    <string name="title_time">时间</string>
+    <string name="title_epc">标签号码</string>
+    <string name="title_status">状态</string>
+    <string name="home_title">上海人才档案中心</string>
+    <string name="warehouse_name">第一库房</string>
+    <string name="bottom_count1">总共有 </string>
+    <string name="bottom_count2">0</string>
+    <string name="bottom_count3">份文档</string>
+    <string name="bottom_button">确&#160;&#160;&#160;&#160;认</string>
+
+</resources>

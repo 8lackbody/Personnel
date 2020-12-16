@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#6200EE</color>
+    <color name="colorPrimaryDark">#3700B3</color>
+    <color name="colorAccent">#03DAC5</color>
+    <color name="gray2">#80ffffff</color>
+
+    <!-- keyguard tab -->
+    <color name="keyguard_text_color_normal">#ffffff</color>
+    <color name="keyguard_text_color_unlock">#a7d84c</color>
+    <color name="keyguard_text_color_soundoff">#ffffff</color>
+    <color name="keyguard_text_color_soundon">#e69310</color>
+    <color name="keyguard_text_color_decline">#fe0a5a</color>
+    <color name="down_bar_color">#5FE4F2</color>
+    <color name="setting_mode_bg_mid_press">#2690A0</color>
+    <color name="bg_home_device">#33FFFFFF</color>
+
+    <!-- Multi-sim sim colors -->
+    <color name="transparent">#00000000</color>
+    <color name="white">#ffffff</color>
+    <color name="disabled_color">#9adfdc</color>
+    <color name="sixty_percent_black">#90000000</color>
+    <color name="eighty_percent_white">#CCffffff</color>
+    <color name="forty_percent_white">#66ffffff</color>
+    <color name="transparent_white">#50ffffff</color>
+    <color name="black">#CC000000</color><!--80%黑色-->
+    <color name="black100">#000000</color><!--100%黑色-->
+    <color name="eighty_percent_black">#CC000000</color>
+    <color name="forty_percent_black">#66000000</color><!--40%黑色-->
+    <color name="Teal_700">#ff00796b</color>
+    <color name="Teal_800">#ff00695c</color>
+    <color name="Blue_700">#ff3367d6</color>
+    <color name="Blue_800">#ff2a56c6</color>
+    <color name="Indigo_700">#ff303f9f</color>
+    <color name="Indigo_800">#ff283593</color>
+    <color name="Purple_700">#ff7b1fa2</color>
+    <color name="Purple_800">#ff6a1b9a</color>
+    <color name="Pink_700">#ffc2185b</color>
+    <color name="Pink_800">#ffad1457</color>
+    <color name="Red_700">#ffc53929</color>
+    <color name="Red_800">#ffb93221</color>
+    <color name="Red">#ff0000</color>
+    <color name="lite_gray">#c9c9c9</color>
+    <color name="text_green">#2a8fa0</color>
+    <color name="home_tab_bg">#227785</color>
+
+    <color name="space_line_color">#5FE3F1</color>
+    <color name="scrollbarThumbVertical_color">#50ffffff</color>
+    <color name="title_bg_color">#00000000</color>
+    <color name="title_text_color">@color/white</color>
+    <color name="menu_list_divider_color">#e5e5e5</color>
+    <color name="loaning_activity_bar_color">#38adff</color>
+
+
+    <!--开关按钮-->
+    <color name="ksw_md_ripple_normal">#1E000000</color>
+    <color name="ksw_md_ripple_checked">#33019285</color>
+    <color name="ksw_md_solid_shadow">#33000000</color>
+    <color name="ksw_md_solid_normal">#ffffff</color>
+    <color name="ksw_md_solid_checked">#ffffff</color>
+    <color name="ksw_md_solid_disable">#c4c4c4</color>
+    <color name="provision_bg_color">#eaeaea</color>
+    <color name="ksw_md_solid_checked_disable">#c4c4c4</color>
+    <!--开关按钮-->
+
+    <!--图标灰色-->
+    <color name="gray">#54aab7</color>
+    <color name="disable_gray">#dcdcdc</color>
+    <color name="confirm">#64B4AE</color>
+
+    <color name="toast_bg">#67c5de</color>
+    <color name="delete_color">#fc4747</color>
+    <color name="navigation_color">#3FB5D9</color>
+    <color name="first_navigation_color">#E7E7E7</color>
+    <color name="home_navigation_color">#2C7E97</color>
+    <color name="home_switch_on_color">#4Dffffff</color>
+    <color name="filter_text_bg">#1cbbdb</color>
+    <color name="filter_item_bg">#4ed8f2</color>
+    <color name="gray6">#999999</color>
+    <color name="mode_selected_color">#1cbbdb</color>
+    <color name="security_monitor">#70d1bf</color>
+    <color name="security_monitor_title_text">#242D2C</color>
+    <color name="security_monitor_title">#C7E5DF</color>
+    <color name="switch_normal">#808080</color>
+    <color name="sm_model_select">#6AAEC0</color>
+    <color name="sm_alert_time">#8E8E8E</color>
+    <color name="sm_delete">#FF0000</color>
+    <color name="mine_item_hint_text">#575757</color>
+    <color name="common_line_gray">#4c404040</color>
+    <color name="no_weather_hint">#FEBC57</color>
+    <color name="weather_text">#92949A</color>
+    <color name="seventy_percent_white">#B3ffffff</color>
+    <color name="room_cleaning_selected_color">#87E5EF</color>
+    <color name="mine_item_line">#7FFFFFFF</color>
+    <color name="intelligence_edit">#0b89cf</color>
+</resources>
