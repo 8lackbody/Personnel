@@ -53,44 +53,7 @@ public class LoginActivity extends AppCompatActivity {
         button.setOnClickListener(this::onClick);
     }
 
-    /**
-     * 发送请求 得到仓库名
-     * 请求成功，跳转页面，运行socket
-     */
-    private void sendRequestWithOkHttp() {
-        new Thread(() -> {
-            String url = "http://" + settings.getString("ip", "192.168.1.4")
-                    + ":8980/dangan/app/getWarehouseName";
-            MediaType type = MediaType.parse("application/json;charset=utf-8");
-            RequestBody RequestBody2 = RequestBody.create(type, androidIp.getText().toString());
-            try {
-                OkHttpClient client = new OkHttpClient();
-                Request request = new Request.Builder()
-                        // 指定访问的服务器地址
-                        .url(url).post(RequestBody2)
-                        .build();
-                Response response = client.newCall(request).execute();
-                JSONObject resultVo = JSON.parseObject(response.body().string());
-                JSONObject data = JSON.parseObject(resultVo.getString("data"));
-                if (response.code() == 200) {
-                    Intent intent;
-                    intent = new Intent().setClass(LoginActivity.this, MainActivity.class);
-                    intent.putExtra("title", data.getString("mechanismName"));
-                    intent.putExtra("warehouse", data.getString("warehouseName"));
-                    startActivity(intent);
-                } else {
-                    Looper.prepare();
-                    Toast.makeText(this, "服务器处理出错！", Toast.LENGTH_LONG).show();
-                    MyLog.v("查询仓库名错误", "");
-                    Looper.loop();
-                }
-            } catch (Exception e) {
-                Looper.prepare();
-                Toast.makeText(this, "连接超时，请检查服务器IP", Toast.LENGTH_LONG).show();
-                Looper.loop();
-            }
-        }).start();
-    }
+
 
     /**
      * 检查首页中的三个输入框的数据是否符合格式
@@ -117,7 +80,7 @@ public class LoginActivity extends AppCompatActivity {
 
     private void onClick(View view) {
         if (checkInputData()) {
-            sendRequestWithOkHttp();
+
         }
     }
 

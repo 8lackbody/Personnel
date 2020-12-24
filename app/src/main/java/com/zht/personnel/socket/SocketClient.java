@@ -2,6 +2,7 @@ package com.zht.personnel.socket;
 
 import android.content.SharedPreferences;
 import com.zht.personnel.ContextApplication;
+import com.zht.personnel.adapter.EPCTag;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -9,6 +10,8 @@ import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
 
 public class SocketClient implements Runnable {
 
@@ -55,7 +58,15 @@ public class SocketClient implements Runnable {
             if (isConnect) {
                 try {
                     String msg = bufferedReader.readLine();
-                    onProgress(msg);
+                    boolean readerStatus = true;
+                    List<EPCTag> getData = new ArrayList<>();
+
+                    if(readerStatus){
+                        onProgress(getData);
+                    }else {
+                        readerHeartBeatStop();
+                    }
+
                 } catch (Exception e) {
                     disconnection();
                     MyLog.v("socket", "设备socket断开" + e.getMessage());
@@ -69,9 +80,16 @@ public class SocketClient implements Runnable {
     }
 
     /**
-     * @param msg
+     * @param getData
      */
-    protected void onProgress(String msg) {
+    protected void onProgress(List<EPCTag> getData) {
+
+    }
+
+    /**
+     *
+     */
+    protected void readerHeartBeatStop() {
 
     }
 
