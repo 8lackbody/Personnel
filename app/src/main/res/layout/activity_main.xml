@@ -225,6 +225,17 @@
 
     </pl.droidsonroids.gif.GifImageView>
 
+    <ImageView
+        android:id="@+id/setting_image"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="70dp"
+        android:layout_marginRight="30dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+    </ImageView>
+
 </androidx.constraintlayout.widget.ConstraintLayout>
 
 

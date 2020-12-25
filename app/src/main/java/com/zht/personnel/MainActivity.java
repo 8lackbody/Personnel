@@ -1,12 +1,17 @@
 package com.zht.personnel;
 
+import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.view.KeyEvent;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -21,6 +26,8 @@ import com.zht.personnel.adapter.HomeRecycleAdapter;
 import com.zht.personnel.socket.MyLog;
 import com.zht.personnel.socket.SocketClient;
 
+import java.lang.ref.WeakReference;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
@@ -36,6 +43,8 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 import pl.droidsonroids.gif.GifImageView;
 
+
+
 public class MainActivity extends AppCompatActivity {
 
     private RecyclerView recyclerView;//声明RecyclerView
@@ -50,6 +59,10 @@ public class MainActivity extends AppCompatActivity {
     private Button confirm;
     private Timer timer;
     private GifImageView gif;
+    SharedPreferences preferences;
+    SharedPreferences.Editor editor;
+
+    ImageView setting;
 
     //判断是否需要开始清空表任务
     private boolean flag = false;
@@ -74,7 +87,7 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
-
+    @SuppressLint("HandlerLeak")
     Handler handler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
@@ -87,6 +100,11 @@ public class MainActivity extends AppCompatActivity {
                     break;
                 case 3:
                     gif.setBackgroundResource(R.drawable.stop);
+                    break;
+                case 4:
+                    Bundle data = msg.getData();
+                    homeTitle.setText(data.getString("mechanism_name"));
+                    warehouseName.setText(data.getString("warehouse_name"));
                     break;
                 default:
             }
@@ -149,6 +167,7 @@ public class MainActivity extends AppCompatActivity {
         warehouseName = findViewById(R.id.warehouse_name);
         confirm = findViewById(R.id.button);
         gif = findViewById(R.id.gif);
+        setting = findViewById(R.id.setting_image);
         list = new ArrayList<>();
         tableData = new HashSet<>();
         homeAdapter = new HomeRecycleAdapter(context, list);
@@ -157,11 +176,27 @@ public class MainActivity extends AppCompatActivity {
         recyclerView.setLayoutManager(manager);
         recyclerView.setAdapter(homeAdapter);
         timer = new Timer();
+        preferences = getSharedPreferences("setting", 0);
+        editor = preferences.edit();
 
         confirm.setOnClickListener(view -> {
             stopConfirmTable();
             setConfirm();
         });
+
+        setting.setOnClickListener(view ->{
+            //TODO 跳转页面去设置页面
+            Intent intent = new Intent(this,LoginActivity.class);
+            startActivity(intent);
+        });
+
+        //请求获得对应仓库信息
+        new Thread(){
+            @Override
+            public void run() {
+                sendRequestWithOkHttp();
+            }
+        }.start();
     }
 
     /**
@@ -263,9 +298,9 @@ public class MainActivity extends AppCompatActivity {
      */
     private void sendRequestWithOkHttp() {
         new Thread(() -> {
-            String url = "http://192.168.1.4:8980/dangan/app/getWarehouseName";
+            String url = "http://"+preferences.getString("ip", "192.168.1.4")+":8980/dangan/app/getWarehouseName";
             MediaType type = MediaType.parse("application/json;charset=utf-8");
-            RequestBody RequestBody2 = RequestBody.create(type, "192.168.1.100");
+            RequestBody RequestBody2 = RequestBody.create(type, preferences.getString("local", "192.168.1.100"));
             try {
                 OkHttpClient client = new OkHttpClient();
                 Request request = new Request.Builder()
@@ -277,6 +312,15 @@ public class MainActivity extends AppCompatActivity {
                 JSONObject data = JSON.parseObject(resultVo.getString("data"));
                 if (response.code() == 200) {
                     //TODO 执行请求成功的操作
+                    editor.putString("local", data.getString("warehouseId"));
+                    editor.commit();
+                    Message msg = new Message();
+                    Bundle bundle = new Bundle();
+                    bundle.putString("warehouse_name",data.getString("warehouse_name"));
+                    bundle.putString("mechanism_name",data.getString("mechanism_name"));
+                    msg.setData(bundle);
+                    msg.what = 4;
+                    handler.sendMessage(msg);
                 } else {
                     Looper.prepare();
                     Toast.makeText(this, "服务器处理出错！", Toast.LENGTH_LONG).show();
@@ -291,3 +335,4 @@ public class MainActivity extends AppCompatActivity {
         }).start();
     }
 }
+

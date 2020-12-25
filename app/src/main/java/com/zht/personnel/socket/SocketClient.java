@@ -38,7 +38,7 @@ public class SocketClient implements Runnable {
             bufferedReader = new BufferedReader(inputStreamReader);
             //连接socket 连接成功后发送userName
             PrintWriter out = new PrintWriter(socket.getOutputStream());
-            String userName = "zht";
+            String userName = preferences.getString("warehouseId", "1");
             out.println(userName);
             out.flush();
             isConnect = true;

@@ -53,8 +53,6 @@ public class LoginActivity extends AppCompatActivity {
         button.setOnClickListener(this::onClick);
     }
 
-
-
     /**
      * 检查首页中的三个输入框的数据是否符合格式
      *
@@ -80,7 +78,7 @@ public class LoginActivity extends AppCompatActivity {
 
     private void onClick(View view) {
         if (checkInputData()) {
-
+            Toast.makeText(this, "设置成功", Toast.LENGTH_LONG).show();
         }
     }
 
