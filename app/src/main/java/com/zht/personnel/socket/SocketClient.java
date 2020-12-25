@@ -1,6 +1,9 @@
 package com.zht.personnel.socket;
 
 import android.content.SharedPreferences;
+
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.zht.personnel.ContextApplication;
 import com.zht.personnel.adapter.EPCTag;
 
@@ -10,7 +13,6 @@ import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
-import java.util.ArrayList;
 import java.util.List;
 
 public class SocketClient implements Runnable {
@@ -58,15 +60,16 @@ public class SocketClient implements Runnable {
             if (isConnect) {
                 try {
                     String msg = bufferedReader.readLine();
-                    boolean readerStatus = true;
-                    List<EPCTag> getData = new ArrayList<>();
-
-                    if(readerStatus){
-                        onProgress(getData);
-                    }else {
+                    JSONObject jsonObject = JSON.parseObject(msg);
+                    boolean readerStatus = jsonObject.getBoolean("readerStatus");
+                    List<EPCTag> getData = JSON.parseArray(jsonObject.getString("tags"), EPCTag.class);
+                    if (readerStatus) {
+                        if (getData.size() > 0) {
+                            onProgress(getData);
+                        }
+                    } else {
                         readerHeartBeatStop();
                     }
-
                 } catch (Exception e) {
                     disconnection();
                     MyLog.v("socket", "设备socket断开" + e.getMessage());
