@@ -185,7 +185,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         setting.setOnClickListener(view ->{
-            //TODO 跳转页面去设置页面
+            // 跳转页面去设置页面
             Intent intent = new Intent(this,LoginActivity.class);
             startActivity(intent);
         });
