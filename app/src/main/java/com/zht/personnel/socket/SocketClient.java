@@ -1,6 +1,7 @@
 package com.zht.personnel.socket;
 
 import android.content.SharedPreferences;
+import android.util.Log;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
@@ -14,6 +15,7 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.List;
+import java.util.logging.Logger;
 
 public class SocketClient implements Runnable {
 
@@ -32,7 +34,8 @@ public class SocketClient implements Runnable {
 
     private void connect() {
         try {
-            InetAddress addr = InetAddress.getByName(preferences.getString("ip", "192.168.1.1"));
+            System.out.println(preferences.getString("ip", "192.168.1.2"));
+            InetAddress addr = InetAddress.getByName(preferences.getString("ip", "192.168.1.2"));
             socket = new Socket();
             socket.connect(new InetSocketAddress(addr, 9999), 5000);
 
@@ -61,12 +64,14 @@ public class SocketClient implements Runnable {
                 try {
                     String msg = bufferedReader.readLine();
                     JSONObject jsonObject = JSON.parseObject(msg);
+                    Log.v("msg",msg);
                     boolean readerStatus = jsonObject.getBoolean("readerStatus");
                     List<EPCTag> getData = JSON.parseArray(jsonObject.getString("tags"), EPCTag.class);
                     if (readerStatus) {
                         if (getData.size() > 0) {
                             onProgress(getData);
                         }
+                        readerHeartBeatStart();
                     } else {
                         readerHeartBeatStop();
                     }
@@ -97,6 +102,13 @@ public class SocketClient implements Runnable {
     }
 
     /**
+     *
+     */
+    protected void readerHeartBeatStart() {
+
+    }
+
+    /**
      * 设备断线触发
      */
     protected void disconnection() {
@@ -109,4 +121,6 @@ public class SocketClient implements Runnable {
     protected void connectionSuccess() {
 
     }
+
+
 }

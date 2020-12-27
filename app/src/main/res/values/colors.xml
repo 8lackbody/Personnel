@@ -67,7 +67,7 @@
     <color name="gray">#54aab7</color>
     <color name="disable_gray">#dcdcdc</color>
     <color name="confirm">#64B4AE</color>
-
+        <color name="red">#A13A33</color>
     <color name="toast_bg">#67c5de</color>
     <color name="delete_color">#fc4747</color>
     <color name="navigation_color">#3FB5D9</color>

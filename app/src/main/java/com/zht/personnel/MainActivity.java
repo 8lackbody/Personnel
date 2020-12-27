@@ -5,6 +5,8 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -16,6 +18,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -26,8 +29,6 @@ import com.zht.personnel.adapter.HomeRecycleAdapter;
 import com.zht.personnel.socket.MyLog;
 import com.zht.personnel.socket.SocketClient;
 
-import java.lang.ref.WeakReference;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
@@ -44,7 +45,6 @@ import okhttp3.Response;
 import pl.droidsonroids.gif.GifImageView;
 
 
-
 public class MainActivity extends AppCompatActivity {
 
     private RecyclerView recyclerView;//声明RecyclerView
@@ -58,34 +58,36 @@ public class MainActivity extends AppCompatActivity {
     private TextView number;
     private Button confirm;
     private Timer timer;
+    MediaPlayer mediaPlayer;
     private GifImageView gif;
     SharedPreferences preferences;
     SharedPreferences.Editor editor;
 
+    //先定义
+    private static final int REQUEST_EXTERNAL_STORAGE = 1;
+
+    private static String[] PERMISSIONS_STORAGE = {
+            "android.permission.READ_EXTERNAL_STORAGE",
+            "android.permission.WRITE_EXTERNAL_STORAGE"};
+
+    //然后通过一个函数来申请
+    public static void verifyStoragePermissions(Activity activity) {
+        try {
+            //检测是否有写的权限
+            int permission = ActivityCompat.checkSelfPermission(activity,
+                    "android.permission.WRITE_EXTERNAL_STORAGE");
+            if (permission != PackageManager.PERMISSION_GRANTED) {
+                // 没有写的权限，去申请写的权限，会弹出对话框
+                ActivityCompat.requestPermissions(activity, PERMISSIONS_STORAGE, REQUEST_EXTERNAL_STORAGE);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     ImageView setting;
 
-    //判断是否需要开始清空表任务
-    private boolean flag = false;
-
     private boolean mIsExit;
-
-    TimerTask confirmTable = new TimerTask() {
-        @Override
-        public void run() {
-            setConfirm();
-        }
-    };
-
-    TimerTask cleanTable = new TimerTask() {
-        @Override
-        public void run() {
-            tableData.clear();
-            list.clear();
-            handler.sendEmptyMessage(1);
-            stopCleanTable();
-            stopConfirmTable();
-        }
-    };
 
     @SuppressLint("HandlerLeak")
     Handler handler = new Handler() {
@@ -116,7 +118,9 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         context = this;
         setContentView(R.layout.activity_main);
+        verifyStoragePermissions(this);
         init();
+
 
         socketClient = new SocketClient() {
             @Override
@@ -127,11 +131,8 @@ public class MainActivity extends AppCompatActivity {
                     }
                     tableData.addAll(getData);
                     if (tableData.size() > list.size()) {
-                        stopConfirmTable();
+                        stopTimer();
                         startConfirmTable();
-                        if (flag == true) {
-                            stopCleanTable();
-                        }
                         handler.sendEmptyMessage(1);
                     }
                 } catch (Exception e) {
@@ -153,6 +154,11 @@ public class MainActivity extends AppCompatActivity {
             protected void readerHeartBeatStop() {
                 handler.sendEmptyMessage(3);
             }
+
+            @Override
+            protected void readerHeartBeatStart() {
+                handler.sendEmptyMessage(2);
+            }
         };
         new Thread(socketClient).start();
     }
@@ -170,7 +176,15 @@ public class MainActivity extends AppCompatActivity {
         setting = findViewById(R.id.setting_image);
         list = new ArrayList<>();
         tableData = new HashSet<>();
-        homeAdapter = new HomeRecycleAdapter(context, list);
+        homeAdapter = new HomeRecycleAdapter(context, list) {
+            @Override
+            protected void startMp3() {
+                if (mediaPlayer == null) {
+                    mediaPlayer = MediaPlayer.create(context, R.raw.test);
+                    mediaPlayer.setLooping(true);
+                }
+            }
+        };
         GridLayoutManager manager = new GridLayoutManager(context, 1);
         manager.setOrientation(GridLayoutManager.VERTICAL);
         recyclerView.setLayoutManager(manager);
@@ -178,20 +192,23 @@ public class MainActivity extends AppCompatActivity {
         timer = new Timer();
         preferences = getSharedPreferences("setting", 0);
         editor = preferences.edit();
+        System.out.println(ContextApplication.getAppContext().getFilesDir().getAbsolutePath());
+        System.out.println(getExternalCacheDir().getPath());
+
 
         confirm.setOnClickListener(view -> {
-            stopConfirmTable();
+            stopTimer();
             setConfirm();
         });
 
-        setting.setOnClickListener(view ->{
+        setting.setOnClickListener(view -> {
             // 跳转页面去设置页面
-            Intent intent = new Intent(this,LoginActivity.class);
+            Intent intent = new Intent(this, LoginActivity.class);
             startActivity(intent);
         });
 
         //请求获得对应仓库信息
-        new Thread(){
+        new Thread() {
             @Override
             public void run() {
                 sendRequestWithOkHttp();
@@ -215,7 +232,7 @@ public class MainActivity extends AppCompatActivity {
                 epcTag.setStatus("已确认");
             }
             if (haveGray == true) {
-                stopCleanTable();
+                stopTimer();
                 startCleanTable();
                 handler.sendEmptyMessage(1);
             }
@@ -236,39 +253,46 @@ public class MainActivity extends AppCompatActivity {
      * 开始清空表的任务
      */
     public void startCleanTable() {
-        MyLog.v("run", new Date() + "开始清空表的任务");
-        flag = true;
-        timer.schedule(cleanTable, 60000);
-    }
-
-    /**
-     * 停止清空表的任务
-     */
-    public void stopCleanTable() {
-        if (cleanTable != null) {
-            MyLog.v("run", new Date() + "停止清空表的任务");
-            cleanTable.cancel();
-            timer.purge();
-            flag = false;
-        }
+//        MyLog.v("run", new Date() + "开始清空表的任务");
+        timer = new Timer();
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                tableData.clear();
+                list.clear();
+                handler.sendEmptyMessage(1);
+                if(mediaPlayer != null){
+                    mediaPlayer.pause();
+                    mediaPlayer.release();
+                    mediaPlayer = null;
+                }
+                stopTimer();
+            }
+        }, 10000);
     }
 
     /**
      * 开始确认表的任务
      */
     public void startConfirmTable() {
-        MyLog.v("run", new Date() + "开始确认表的任务");
-        timer.schedule(confirmTable, 60000);
+//        MyLog.v("run", new Date() + "开始确认表的任务");
+        timer = new Timer();
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                setConfirm();
+            }
+        }, 10000);
     }
 
     /**
      * 停止确认表的任务
      */
-    public void stopConfirmTable() {
-        if (confirmTable != null) {
-            MyLog.v("run", new Date() + "停止确认表的任务");
-            confirmTable.cancel();
+    public void stopTimer() {
+        if (timer != null) {
+            timer.cancel();
             timer.purge();
+            timer = null;
         }
     }
 
@@ -298,9 +322,9 @@ public class MainActivity extends AppCompatActivity {
      */
     private void sendRequestWithOkHttp() {
         new Thread(() -> {
-            String url = "http://"+preferences.getString("ip", "192.168.1.4")+":8980/dangan/app/getWarehouseName";
+            String url = "http://" + preferences.getString("ip", "192.168.1.2") + ":8980/dangan/app/getWarehouseName";
             MediaType type = MediaType.parse("application/json;charset=utf-8");
-            RequestBody RequestBody2 = RequestBody.create(type, preferences.getString("local", "192.168.1.100"));
+            RequestBody RequestBody2 = RequestBody.create(type, preferences.getString("local", "192.168.1.188"));
             try {
                 OkHttpClient client = new OkHttpClient();
                 Request request = new Request.Builder()
@@ -311,13 +335,14 @@ public class MainActivity extends AppCompatActivity {
                 JSONObject resultVo = JSON.parseObject(response.body().string());
                 JSONObject data = JSON.parseObject(resultVo.getString("data"));
                 if (response.code() == 200) {
-                    //TODO 执行请求成功的操作
-                    editor.putString("local", data.getString("warehouseId"));
+                    // 执行请求成功的操作
+                    editor.putString("local", data.getString("readerIp"));
+                    editor.putString("warehouseId", data.getString("warehouseId"));
                     editor.commit();
                     Message msg = new Message();
                     Bundle bundle = new Bundle();
-                    bundle.putString("warehouse_name",data.getString("warehouse_name"));
-                    bundle.putString("mechanism_name",data.getString("mechanism_name"));
+                    bundle.putString("warehouse_name", data.getString("warehouseName"));
+                    bundle.putString("mechanism_name", data.getString("mechanismName"));
                     msg.setData(bundle);
                     msg.what = 4;
                     handler.sendMessage(msg);

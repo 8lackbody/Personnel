@@ -59,6 +59,15 @@ public class HomeRecycleAdapter extends RecyclerView.Adapter<HomeRecycleAdapter.
             holder.textstats.setTextColor(context.getColor(R.color.ksw_md_solid_disable));
             holder.textstats.setText(tags.get(position).getStatus());
         }
+        if(tags.get(position).getAlert()==1){
+            startMp3();
+            holder.itemView.setBackgroundColor(context.getColor(R.color.red));
+        }
+
+    }
+
+    protected void startMp3(){
+
     }
 
     @Override

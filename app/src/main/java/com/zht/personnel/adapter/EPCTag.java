@@ -16,6 +16,8 @@ public class EPCTag {
 
     private String status;
 
+    private Integer alert;
+
     public String getDate() {
         return date;
     }
@@ -44,17 +46,27 @@ public class EPCTag {
         return status;
     }
 
+    public void setAlert(Integer alert) {
+        this.alert = alert;
+    }
+
+    public Integer getAlert() {
+        return alert;
+    }
+
     public void setStatus(String status) {
         this.status = status;
     }
 
 
-    public EPCTag(String date, String epc, String name, String status) {
+    public EPCTag(String date, String epc, String name, String status, Integer alert) {
         this.date = date;
         this.epc = epc;
         this.name = name;
         this.status = status;
+        this.alert = alert;
     }
+
     public EPCTag() {
     }
 
