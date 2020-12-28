@@ -14,6 +14,7 @@
     <color name="down_bar_color">#5FE4F2</color>
     <color name="setting_mode_bg_mid_press">#2690A0</color>
     <color name="bg_home_device">#33FFFFFF</color>
+    <color name="back">#FAFAFA</color>
 
     <!-- Multi-sim sim colors -->
     <color name="transparent">#00000000</color>
