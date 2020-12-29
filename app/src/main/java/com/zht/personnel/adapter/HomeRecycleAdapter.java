@@ -61,7 +61,9 @@ public class HomeRecycleAdapter extends RecyclerView.Adapter<HomeRecycleAdapter.
         }
         if(tags.get(position).getAlert()==1){
             startMp3();
-            holder.itemView.setBackgroundColor(context.getColor(R.color.red));
+            holder.itemView.setBackground(context.getDrawable(R.drawable.warning));
+        }else {
+            holder.itemView.setBackground(null);
         }
 
     }

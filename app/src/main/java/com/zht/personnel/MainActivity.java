@@ -30,6 +30,8 @@ import com.zht.personnel.socket.MyLog;
 import com.zht.personnel.socket.SocketClient;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -182,9 +184,11 @@ public class MainActivity extends AppCompatActivity {
                 if (mediaPlayer == null) {
                     mediaPlayer = MediaPlayer.create(context, R.raw.test);
                     mediaPlayer.setLooping(true);
+                    mediaPlayer.start();
                 }
             }
         };
+
         GridLayoutManager manager = new GridLayoutManager(context, 1);
         manager.setOrientation(GridLayoutManager.VERTICAL);
         recyclerView.setLayoutManager(manager);
@@ -244,6 +248,9 @@ public class MainActivity extends AppCompatActivity {
      */
     public void refreshTable() {
         list = new ArrayList<>(tableData);
+        Collections.sort(list, (t1, t2) -> t1.getEpc().compareTo(t2.getEpc()));
+        Collections.sort(list, (t1, t2) -> t2.getAlert().compareTo(t1.getAlert()));
+
         homeAdapter.setList(list);
         homeAdapter.notifyDataSetChanged();
         number.setText(list.size() + "");
@@ -268,7 +275,7 @@ public class MainActivity extends AppCompatActivity {
                 }
                 stopTimer();
             }
-        }, 10000);
+        }, 60000);
     }
 
     /**
@@ -282,7 +289,7 @@ public class MainActivity extends AppCompatActivity {
             public void run() {
                 setConfirm();
             }
-        }, 10000);
+        }, 60000);
     }
 
     /**
