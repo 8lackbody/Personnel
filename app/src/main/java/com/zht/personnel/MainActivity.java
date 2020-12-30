@@ -123,7 +123,6 @@ public class MainActivity extends AppCompatActivity {
         verifyStoragePermissions(this);
         init();
 
-
         socketClient = new SocketClient() {
             @Override
             protected void onProgress(List<EPCTag> getData) {
@@ -138,7 +137,7 @@ public class MainActivity extends AppCompatActivity {
                         handler.sendEmptyMessage(1);
                     }
                 } catch (Exception e) {
-                    MyLog.v("main error", e.getMessage());
+                    MyLog.v("socketClient error", e.getMessage());
                 }
             }
 
@@ -172,12 +171,16 @@ public class MainActivity extends AppCompatActivity {
         recyclerView = findViewById(R.id.home_recycler_view);
         number = findViewById(R.id.bottom_count2);
         homeTitle = findViewById(R.id.home_title);
+        homeTitle.setText(preferences.getString("mechanism_name",context.getString(R.string.home_title)));
         warehouseName = findViewById(R.id.warehouse_name);
+        warehouseName.setText(preferences.getString("warehouse_name",context.getString(R.string.warehouse_name)));
         confirm = findViewById(R.id.button);
         gif = findViewById(R.id.gif);
         setting = findViewById(R.id.setting_image);
         list = new ArrayList<>();
         tableData = new HashSet<>();
+
+        //重写列表生成时的音乐播放
         homeAdapter = new HomeRecycleAdapter(context, list) {
             @Override
             protected void startMp3() {
@@ -196,10 +199,8 @@ public class MainActivity extends AppCompatActivity {
         timer = new Timer();
         preferences = getSharedPreferences("setting", 0);
         editor = preferences.edit();
-        System.out.println(ContextApplication.getAppContext().getFilesDir().getAbsolutePath());
-        System.out.println(getExternalCacheDir().getPath());
 
-
+        //确认按钮点击事件
         confirm.setOnClickListener(view -> {
             stopTimer();
             setConfirm();
@@ -248,6 +249,7 @@ public class MainActivity extends AppCompatActivity {
      */
     public void refreshTable() {
         list = new ArrayList<>(tableData);
+        //排序 先根据标签排序，在把警报的上移
         Collections.sort(list, (t1, t2) -> t1.getEpc().compareTo(t2.getEpc()));
         Collections.sort(list, (t1, t2) -> t2.getAlert().compareTo(t1.getAlert()));
 
@@ -260,7 +262,6 @@ public class MainActivity extends AppCompatActivity {
      * 开始清空表的任务
      */
     public void startCleanTable() {
-//        MyLog.v("run", new Date() + "开始清空表的任务");
         timer = new Timer();
         timer.schedule(new TimerTask() {
             @Override
@@ -282,7 +283,6 @@ public class MainActivity extends AppCompatActivity {
      * 开始确认表的任务
      */
     public void startConfirmTable() {
-//        MyLog.v("run", new Date() + "开始确认表的任务");
         timer = new Timer();
         timer.schedule(new TimerTask() {
             @Override
@@ -345,6 +345,8 @@ public class MainActivity extends AppCompatActivity {
                     // 执行请求成功的操作
                     editor.putString("local", data.getString("readerIp"));
                     editor.putString("warehouseId", data.getString("warehouseId"));
+                    editor.putString("warehouse_name", data.getString("warehouseName"));
+                    editor.putString("mechanism_name", data.getString("mechanismName"));
                     editor.commit();
                     Message msg = new Message();
                     Bundle bundle = new Bundle();
@@ -356,7 +358,7 @@ public class MainActivity extends AppCompatActivity {
                 } else {
                     Looper.prepare();
                     Toast.makeText(this, "服务器处理出错！", Toast.LENGTH_LONG).show();
-                    MyLog.v("查询仓库名错误", "");
+                    MyLog.v("查询仓库名错误", resultVo.toJSONString());
                     Looper.loop();
                 }
             } catch (Exception e) {

@@ -52,17 +52,24 @@ public class HomeRecycleAdapter extends RecyclerView.Adapter<HomeRecycleAdapter.
         holder.textEpc.setText(tags.get(position).getEpc());
         holder.textName.setText(tags.get(position).getName());
         holder.textDate.setText(tags.get(position).getDate());
-        if (tags.get(position).getStatus().equals("已确认")) {
-            holder.textstats.setTextColor(context.getColor(R.color.confirm));
-            holder.textstats.setText(tags.get(position).getStatus());
-        } else {
-            holder.textstats.setTextColor(context.getColor(R.color.ksw_md_solid_disable));
-            holder.textstats.setText(tags.get(position).getStatus());
-        }
         if(tags.get(position).getAlert()==1){
+            if (tags.get(position).getStatus().equals("已确认")) {
+                holder.textstats.setTextColor(context.getColor(R.color.confirm));
+                holder.textstats.setText(tags.get(position).getStatus());
+            } else {
+                holder.textstats.setTextColor(context.getColor(R.color.white));
+                holder.textstats.setText(tags.get(position).getStatus());
+            }
             startMp3();
             holder.itemView.setBackground(context.getDrawable(R.drawable.warning));
         }else {
+            if (tags.get(position).getStatus().equals("已确认")) {
+                holder.textstats.setTextColor(context.getColor(R.color.confirm));
+                holder.textstats.setText(tags.get(position).getStatus());
+            } else {
+                holder.textstats.setTextColor(context.getColor(R.color.ksw_md_solid_disable));
+                holder.textstats.setText(tags.get(position).getStatus());
+            }
             holder.itemView.setBackground(null);
         }
 
