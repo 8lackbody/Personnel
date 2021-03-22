@@ -15,7 +15,6 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.List;
-import java.util.logging.Logger;
 
 public class SocketClient implements Runnable {
 
@@ -57,14 +56,13 @@ public class SocketClient implements Runnable {
 
     @Override
     public void run() {
-
         while (true) {
             //判断是否连接成功
             if (isConnect) {
                 try {
                     String msg = bufferedReader.readLine();
                     JSONObject jsonObject = JSON.parseObject(msg);
-                    Log.v("msg",msg);
+                    Log.v("msg", msg);
                     boolean readerStatus = jsonObject.getBoolean("readerStatus");
                     List<EPCTag> getData = JSON.parseArray(jsonObject.getString("tags"), EPCTag.class);
                     if (readerStatus) {

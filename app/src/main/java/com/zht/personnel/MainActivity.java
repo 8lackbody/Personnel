@@ -31,7 +31,6 @@ import com.zht.personnel.socket.SocketClient;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -49,16 +48,13 @@ import pl.droidsonroids.gif.GifImageView;
 
 public class MainActivity extends AppCompatActivity {
 
-    private RecyclerView recyclerView;//声明RecyclerView
     private HomeRecycleAdapter homeAdapter;//声明适配器
     private Context context;
     private List<EPCTag> list;
     private Set<EPCTag> tableData;
     private TextView homeTitle;
     private TextView warehouseName;
-    private SocketClient socketClient;
     private TextView number;
-    private Button confirm;
     private Timer timer;
     MediaPlayer mediaPlayer;
     private GifImageView gif;
@@ -68,7 +64,7 @@ public class MainActivity extends AppCompatActivity {
     //先定义
     private static final int REQUEST_EXTERNAL_STORAGE = 1;
 
-    private static String[] PERMISSIONS_STORAGE = {
+    private static final String[] PERMISSIONS_STORAGE = {
             "android.permission.READ_EXTERNAL_STORAGE",
             "android.permission.WRITE_EXTERNAL_STORAGE"};
 
@@ -103,12 +99,15 @@ public class MainActivity extends AppCompatActivity {
                     gif.setBackgroundResource(R.drawable.running);
                     break;
                 case 3:
-                    gif.setBackgroundResource(R.drawable.stop);
+                    gif.setBackgroundResource(R.drawable.server_stop);
                     break;
                 case 4:
                     Bundle data = msg.getData();
                     homeTitle.setText(data.getString("mechanism_name"));
                     warehouseName.setText(data.getString("warehouse_name"));
+                    break;
+                case 5:
+                    gif.setBackgroundResource(R.drawable.reader_stop);
                     break;
                 default:
             }
@@ -123,7 +122,7 @@ public class MainActivity extends AppCompatActivity {
         verifyStoragePermissions(this);
         init();
 
-        socketClient = new SocketClient() {
+        SocketClient socketClient = new SocketClient() {
             @Override
             protected void onProgress(List<EPCTag> getData) {
                 try {
@@ -153,7 +152,7 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             protected void readerHeartBeatStop() {
-                handler.sendEmptyMessage(3);
+                handler.sendEmptyMessage(5);
             }
 
             @Override
@@ -161,6 +160,7 @@ public class MainActivity extends AppCompatActivity {
                 handler.sendEmptyMessage(2);
             }
         };
+
         new Thread(socketClient).start();
     }
 
@@ -168,13 +168,14 @@ public class MainActivity extends AppCompatActivity {
      * 初始化view和属性
      */
     public void init() {
-        recyclerView = findViewById(R.id.home_recycler_view);
+        //声明RecyclerView
+        RecyclerView recyclerView = findViewById(R.id.home_recycler_view);
         number = findViewById(R.id.bottom_count2);
         homeTitle = findViewById(R.id.home_title);
-        homeTitle.setText(preferences.getString("mechanism_name",context.getString(R.string.home_title)));
+        homeTitle.setText(preferences.getString("mechanism_name", getString(R.string.home_title)));
         warehouseName = findViewById(R.id.warehouse_name);
-        warehouseName.setText(preferences.getString("warehouse_name",context.getString(R.string.warehouse_name)));
-        confirm = findViewById(R.id.button);
+        warehouseName.setText(preferences.getString("warehouse_name", getString(R.string.warehouse_name)));
+        Button confirm = findViewById(R.id.button);
         gif = findViewById(R.id.gif);
         setting = findViewById(R.id.setting_image);
         list = new ArrayList<>();
@@ -269,7 +270,7 @@ public class MainActivity extends AppCompatActivity {
                 tableData.clear();
                 list.clear();
                 handler.sendEmptyMessage(1);
-                if(mediaPlayer != null){
+                if (mediaPlayer != null) {
                     mediaPlayer.pause();
                     mediaPlayer.release();
                     mediaPlayer = null;

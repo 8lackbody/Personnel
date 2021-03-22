@@ -52,7 +52,7 @@ public class HomeRecycleAdapter extends RecyclerView.Adapter<HomeRecycleAdapter.
         holder.textEpc.setText(tags.get(position).getEpc());
         holder.textName.setText(tags.get(position).getName());
         holder.textDate.setText(tags.get(position).getDate());
-        if(tags.get(position).getAlert()==1){
+        if (tags.get(position).getAlert() == 1) {
             if (tags.get(position).getStatus().equals("已确认")) {
                 holder.textstats.setTextColor(context.getColor(R.color.confirm));
                 holder.textstats.setText(tags.get(position).getStatus());
@@ -62,7 +62,7 @@ public class HomeRecycleAdapter extends RecyclerView.Adapter<HomeRecycleAdapter.
             }
             startMp3();
             holder.itemView.setBackground(context.getDrawable(R.drawable.warning));
-        }else {
+        } else {
             if (tags.get(position).getStatus().equals("已确认")) {
                 holder.textstats.setTextColor(context.getColor(R.color.confirm));
                 holder.textstats.setText(tags.get(position).getStatus());
@@ -75,7 +75,7 @@ public class HomeRecycleAdapter extends RecyclerView.Adapter<HomeRecycleAdapter.
 
     }
 
-    protected void startMp3(){
+    protected void startMp3() {
 
     }
 

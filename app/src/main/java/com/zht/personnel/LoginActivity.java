@@ -1,20 +1,15 @@
 package com.zht.personnel;
 
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.os.Looper;
 import android.text.method.KeyListener;
 import android.text.method.NumberKeyListener;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
+
 import androidx.appcompat.app.AppCompatActivity;
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
-import com.zht.personnel.socket.MyLog;
-import okhttp3.*;
 
 public class LoginActivity extends AppCompatActivity {
 
