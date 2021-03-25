@@ -14,6 +14,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.zht.personnel.R;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 
 /*
@@ -41,8 +43,7 @@ public class HomeRecycleAdapter extends RecyclerView.Adapter<HomeRecycleAdapter.
     public MyViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         //创建ViewHolder，返回每一项的布局
         inflater = LayoutInflater.from(context).inflate(R.layout.home_item, parent, false);
-        MyViewHolder myViewHolder = new MyViewHolder(inflater);
-        return myViewHolder;
+        return new MyViewHolder(inflater);
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
@@ -51,7 +52,8 @@ public class HomeRecycleAdapter extends RecyclerView.Adapter<HomeRecycleAdapter.
         //将数据和控件绑定
         holder.textEpc.setText(tags.get(position).getEpc());
         holder.textName.setText(tags.get(position).getName());
-        holder.textDate.setText(tags.get(position).getDate());
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+        holder.textDate.setText(sdf.format(new Date(Long.parseLong(tags.get(position).getDate()))));
         if (tags.get(position).getAlert() == 1) {
             if (tags.get(position).getStatus().equals("已确认")) {
                 holder.textstats.setTextColor(context.getColor(R.color.confirm));

@@ -1,5 +1,6 @@
 package com.zht.personnel;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.method.KeyListener;
@@ -74,6 +75,9 @@ public class LoginActivity extends AppCompatActivity {
     private void onClick(View view) {
         if (checkInputData()) {
             Toast.makeText(this, "设置成功", Toast.LENGTH_LONG).show();
+            Intent intent = new Intent(this, MainActivity.class);
+            startActivity(intent);
+            finish();
         }
     }
 

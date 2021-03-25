@@ -86,21 +86,21 @@ public class SocketClient implements Runnable {
     }
 
     /**
-     * @param getData
+     * @param getData 获得的数据
      */
     protected void onProgress(List<EPCTag> getData) {
 
     }
 
     /**
-     *
+     * 阅读器心跳停止
      */
     protected void readerHeartBeatStop() {
 
     }
 
     /**
-     *
+     * 阅读器心跳开始
      */
     protected void readerHeartBeatStart() {
 

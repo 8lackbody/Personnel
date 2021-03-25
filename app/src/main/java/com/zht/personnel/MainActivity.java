@@ -9,9 +9,9 @@ import android.content.pm.PackageManager;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Looper;
 import android.os.Message;
 import android.view.KeyEvent;
+import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -26,6 +26,10 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.zht.personnel.adapter.EPCTag;
 import com.zht.personnel.adapter.HomeRecycleAdapter;
+import com.zht.personnel.http.net.RestClient;
+import com.zht.personnel.http.net.callback.IError;
+import com.zht.personnel.http.net.callback.IFailure;
+import com.zht.personnel.http.net.callback.ISuccess;
 import com.zht.personnel.socket.MyLog;
 import com.zht.personnel.socket.SocketClient;
 
@@ -38,15 +42,10 @@ import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
 import pl.droidsonroids.gif.GifImageView;
 
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
     private HomeRecycleAdapter homeAdapter;//声明适配器
     private Context context;
@@ -60,6 +59,8 @@ public class MainActivity extends AppCompatActivity {
     private GifImageView gif;
     SharedPreferences preferences;
     SharedPreferences.Editor editor;
+    AdminDialog adminDialog;
+    Button confirm;
 
     //先定义
     private static final int REQUEST_EXTERNAL_STORAGE = 1;
@@ -102,9 +103,8 @@ public class MainActivity extends AppCompatActivity {
                     gif.setBackgroundResource(R.drawable.server_stop);
                     break;
                 case 4:
-                    Bundle data = msg.getData();
-                    homeTitle.setText(data.getString("mechanism_name"));
-                    warehouseName.setText(data.getString("warehouse_name"));
+                    homeTitle.setText(preferences.getString("mechanism_name",getString(R.string.home_title)));
+                    warehouseName.setText(preferences.getString("warehouse_name",getString(R.string.warehouse_name)));
                     break;
                 case 5:
                     gif.setBackgroundResource(R.drawable.reader_stop);
@@ -121,6 +121,8 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         verifyStoragePermissions(this);
         init();
+        //请求获得对应仓库信息
+        sendRequestWithOkHttp();
 
         SocketClient socketClient = new SocketClient() {
             @Override
@@ -170,12 +172,14 @@ public class MainActivity extends AppCompatActivity {
     public void init() {
         //声明RecyclerView
         RecyclerView recyclerView = findViewById(R.id.home_recycler_view);
+        preferences = getSharedPreferences("setting", 0);
+        editor = preferences.edit();
         number = findViewById(R.id.bottom_count2);
         homeTitle = findViewById(R.id.home_title);
         homeTitle.setText(preferences.getString("mechanism_name", getString(R.string.home_title)));
         warehouseName = findViewById(R.id.warehouse_name);
         warehouseName.setText(preferences.getString("warehouse_name", getString(R.string.warehouse_name)));
-        Button confirm = findViewById(R.id.button);
+        confirm = findViewById(R.id.button);
         gif = findViewById(R.id.gif);
         setting = findViewById(R.id.setting_image);
         list = new ArrayList<>();
@@ -198,28 +202,37 @@ public class MainActivity extends AppCompatActivity {
         recyclerView.setLayoutManager(manager);
         recyclerView.setAdapter(homeAdapter);
         timer = new Timer();
-        preferences = getSharedPreferences("setting", 0);
-        editor = preferences.edit();
 
+        adminDialog = new AdminDialog(this,R.style.dialog,this);
+        confirm.setOnClickListener(this);
+        setting.setOnClickListener(this);
+    }
+
+    @Override
+    public void onClick(View v) {
         //确认按钮点击事件
-        confirm.setOnClickListener(view -> {
+        if(v == confirm){
             stopTimer();
             setConfirm();
-        });
+        }
 
-        setting.setOnClickListener(view -> {
+        if(v == setting){
             // 跳转页面去设置页面
-            Intent intent = new Intent(this, LoginActivity.class);
-            startActivity(intent);
-        });
+            adminDialog.show();
+        }
 
-        //请求获得对应仓库信息
-        new Thread() {
-            @Override
-            public void run() {
-                sendRequestWithOkHttp();
+        if(v.getId() == R.id.btn_save_pop){
+            String adminPw = adminDialog.adminPw.getText().toString().trim();
+            System.out.println(adminPw);
+            if("jisheng".equals(adminPw)){
+                adminDialog.dismiss();
+                Intent intent = new Intent(this, LoginActivity.class);
+                startActivity(intent);
+                finish();
+            }else {
+                System.out.println("密码错误");
             }
-        }.start();
+        }
     }
 
     /**
@@ -237,7 +250,7 @@ public class MainActivity extends AppCompatActivity {
                 }
                 epcTag.setStatus("已确认");
             }
-            if (haveGray == true) {
+            if (haveGray) {
                 stopTimer();
                 startCleanTable();
                 handler.sendEmptyMessage(1);
@@ -273,7 +286,6 @@ public class MainActivity extends AppCompatActivity {
                 if (mediaPlayer != null) {
                     mediaPlayer.pause();
                     mediaPlayer.release();
-                    mediaPlayer = null;
                 }
                 stopTimer();
             }
@@ -329,45 +341,26 @@ public class MainActivity extends AppCompatActivity {
      * 请求成功，跳转页面，运行socket
      */
     private void sendRequestWithOkHttp() {
-        new Thread(() -> {
-            String url = "http://" + preferences.getString("ip", "192.168.1.2") + ":8980/dangan/app/getWarehouseName";
-            MediaType type = MediaType.parse("application/json;charset=utf-8");
-            RequestBody RequestBody2 = RequestBody.create(type, preferences.getString("local", "192.168.1.188"));
-            try {
-                OkHttpClient client = new OkHttpClient();
-                Request request = new Request.Builder()
-                        // 指定访问的服务器地址
-                        .url(url).post(RequestBody2)
-                        .build();
-                Response response = client.newCall(request).execute();
-                JSONObject resultVo = JSON.parseObject(response.body().string());
-                JSONObject data = JSON.parseObject(resultVo.getString("data"));
-                if (response.code() == 200) {
-                    // 执行请求成功的操作
+        String url = "http://" + preferences.getString("ip", "192.168.1.2") + ":8980/dangan/app/getWarehouseName";
+        RestClient.builder()
+                .url(url)
+                .raw("")
+                .loader(this)
+                .success((ISuccess) response -> {
+                    JSONObject resultVo = JSONObject.parseObject(response);
+                    JSONObject data = JSON.parseObject(resultVo.getString("data"));
                     editor.putString("local", data.getString("readerIp"));
                     editor.putString("warehouseId", data.getString("warehouseId"));
                     editor.putString("warehouse_name", data.getString("warehouseName"));
                     editor.putString("mechanism_name", data.getString("mechanismName"));
                     editor.commit();
-                    Message msg = new Message();
-                    Bundle bundle = new Bundle();
-                    bundle.putString("warehouse_name", data.getString("warehouseName"));
-                    bundle.putString("mechanism_name", data.getString("mechanismName"));
-                    msg.setData(bundle);
-                    msg.what = 4;
-                    handler.sendMessage(msg);
-                } else {
-                    Looper.prepare();
-                    Toast.makeText(this, "服务器处理出错！", Toast.LENGTH_LONG).show();
-                    MyLog.v("查询仓库名错误", resultVo.toJSONString());
-                    Looper.loop();
-                }
-            } catch (Exception e) {
-                Looper.prepare();
-                Toast.makeText(this, "连接超时，请检查服务器IP", Toast.LENGTH_LONG).show();
-                Looper.loop();
-            }
-        }).start();
+                    handler.sendEmptyMessage(4);
+                })
+                .failure((IFailure) () -> Toast.makeText(MainActivity.this, "发送失败,检查网络！", Toast.LENGTH_SHORT).show())
+                .error((IError) (code, msg) -> Toast.makeText(MainActivity.this, "服务器错误！" + code, Toast.LENGTH_SHORT).show())
+                .build()
+                .post();
     }
+
 }
 
