@@ -27,9 +27,6 @@ import com.alibaba.fastjson.JSONObject;
 import com.zht.personnel.adapter.EPCTag;
 import com.zht.personnel.adapter.HomeRecycleAdapter;
 import com.zht.personnel.http.net.RestClient;
-import com.zht.personnel.http.net.callback.IError;
-import com.zht.personnel.http.net.callback.IFailure;
-import com.zht.personnel.http.net.callback.ISuccess;
 import com.zht.personnel.socket.MyLog;
 import com.zht.personnel.socket.SocketClient;
 
@@ -103,8 +100,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     gif.setBackgroundResource(R.drawable.server_stop);
                     break;
                 case 4:
-                    homeTitle.setText(preferences.getString("mechanism_name",getString(R.string.home_title)));
-                    warehouseName.setText(preferences.getString("warehouse_name",getString(R.string.warehouse_name)));
+                    homeTitle.setText(preferences.getString("mechanism_name", getString(R.string.home_title)));
+                    warehouseName.setText(preferences.getString("warehouse_name", getString(R.string.warehouse_name)));
                     break;
                 case 5:
                     gif.setBackgroundResource(R.drawable.reader_stop);
@@ -145,11 +142,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             @Override
             protected void disconnection() {
                 handler.sendEmptyMessage(3);
-            }
-
-            @Override
-            protected void connectionSuccess() {
-                handler.sendEmptyMessage(2);
             }
 
             @Override
@@ -203,7 +195,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         recyclerView.setAdapter(homeAdapter);
         timer = new Timer();
 
-        adminDialog = new AdminDialog(this,R.style.dialog,this);
+        adminDialog = new AdminDialog(this, R.style.dialog, this);
         confirm.setOnClickListener(this);
         setting.setOnClickListener(this);
     }
@@ -211,25 +203,25 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public void onClick(View v) {
         //确认按钮点击事件
-        if(v == confirm){
+        if (v == confirm) {
             stopTimer();
             setConfirm();
         }
 
-        if(v == setting){
+        if (v == setting) {
             // 跳转页面去设置页面
             adminDialog.show();
         }
 
-        if(v.getId() == R.id.btn_save_pop){
+        if (v.getId() == R.id.btn_save_pop) {
             String adminPw = adminDialog.adminPw.getText().toString().trim();
             System.out.println(adminPw);
-            if("jisheng".equals(adminPw)){
+            if ("jisheng".equals(adminPw)) {
                 adminDialog.dismiss();
                 Intent intent = new Intent(this, LoginActivity.class);
                 startActivity(intent);
                 finish();
-            }else {
+            } else {
                 System.out.println("密码错误");
             }
         }
@@ -346,7 +338,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 .url(url)
                 .raw("")
                 .loader(this)
-                .success((ISuccess) response -> {
+                .success(response -> {
                     JSONObject resultVo = JSONObject.parseObject(response);
                     JSONObject data = JSON.parseObject(resultVo.getString("data"));
                     editor.putString("local", data.getString("readerIp"));
@@ -356,8 +348,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     editor.commit();
                     handler.sendEmptyMessage(4);
                 })
-                .failure((IFailure) () -> Toast.makeText(MainActivity.this, "发送失败,检查网络！", Toast.LENGTH_SHORT).show())
-                .error((IError) (code, msg) -> Toast.makeText(MainActivity.this, "服务器错误！" + code, Toast.LENGTH_SHORT).show())
+                .failure(() -> Toast.makeText(MainActivity.this, "发送失败,检查网络！", Toast.LENGTH_SHORT).show())
+                .error((code, msg) -> Toast.makeText(MainActivity.this, "服务器错误！" + code, Toast.LENGTH_SHORT).show())
                 .build()
                 .post();
     }
