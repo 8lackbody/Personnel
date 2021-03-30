@@ -1,12 +1,14 @@
 package com.zht.personnel.socket;
 
 import android.content.SharedPreferences;
+import android.util.Log;
 
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
 import com.zht.personnel.ContextApplication;
 import com.zht.personnel.adapter.EPCTag;
 
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,39 +21,13 @@ import java.util.TimerTask;
 import io.socket.client.Ack;
 import io.socket.client.IO;
 import io.socket.client.Socket;
-import io.socket.emitter.Emitter;
 
 public class SocketClient implements Runnable {
-    private static final Logger logger = LoggerFactory.getLogger(SocketClient.class);
 
     private static Socket socket;
     SharedPreferences preferences;
     String warehouseId;
     Timer timer;
-    TimerTask heartBeat = new TimerTask() {
-        @Override
-        public void run() {
-            try {
-                socket.emit(Socket.EVENT_MESSAGE
-                        , preferences.getString("warehouseId", "1")
-                        , (Ack) objects ->{
-                            JSONObject jsonObject = JSON.parseObject(Arrays.toString(objects));
-                            boolean readerStatus = jsonObject.getBoolean("readerStatus");
-                            List<EPCTag> getData = JSON.parseArray(jsonObject.getString("tags"), EPCTag.class);
-                            if (readerStatus) {
-                                if (getData.size() > 0) {
-                                    onProgress(getData);
-                                }
-                                readerHeartBeatStart();
-                            } else {
-                                readerHeartBeatStop();
-                            }
-                        });
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-    };
 
     public SocketClient() {
         preferences = ContextApplication.getAppContext().getSharedPreferences("setting", 0);
@@ -65,70 +41,56 @@ public class SocketClient implements Runnable {
         options.transports = new String[]{"websocket"};
         options.reconnectionAttempts = 5;     // 重连尝试次数
         options.reconnectionDelay = 2000;     // 失败重连的时间间隔(ms)
-        options.timeout = 10000;              // 连接超时时间(ms)
+        options.timeout = 20000;              // 连接超时时间(ms)
         options.forceNew = true;
         options.query = "warehouseId=" + warehouseId;
         try {
-            socket = IO.socket("http://" + preferences.getString("ip", "192.168.1.2") + ":9999/", options);
+            socket = IO.socket("http://" + preferences.getString("ip", "172.29.12.118") + ":9092/", options);
         } catch (URISyntaxException e) {
+            disconnection();
             e.printStackTrace();
         }
-        socket.on(Socket.EVENT_CONNECT, new Emitter.Listener() {
-            @Override
-            public void call(Object... args) {
-                // 客户端一旦连接成功，开始发起登录请求
-                logger.info(warehouseId + "连接成功");
-                startGetDataForServer();
-            }
-        }).on("login", new Emitter.Listener() {
-            @Override
-            public void call(Object... args) {
-                logger.info("接受到服务器房间广播的登录消息：" + Arrays.toString(args));
-            }
-        }).on(Socket.EVENT_CONNECT_ERROR, new Emitter.Listener() {
-            @Override
-            public void call(Object... args) {
-                logger.info("Socket.EVENT_CONNECT_ERROR");
-                disconnection();
-                socket.connect();
-            }
-        }).on(Socket.EVENT_CONNECT_TIMEOUT, new Emitter.Listener() {
-            @Override
-            public void call(Object... args) {
-                logger.info("Socket.EVENT_CONNECT_TIMEOUT");
-                stopGetDataForServer();
-                socket.connect();
-            }
-        }).on(Socket.EVENT_PING, new Emitter.Listener() {
-            @Override
-            public void call(Object... args) {
-                logger.info("Socket.EVENT_PING");
-            }
-        }).on(Socket.EVENT_PONG, new Emitter.Listener() {
-            @Override
-            public void call(Object... args) {
-                logger.info("Socket.EVENT_PONG");
-            }
-        }).on(Socket.EVENT_MESSAGE, new Emitter.Listener() {
-            @Override
-            public void call(Object... args) {
 
-                logger.info("-----------接受到消息啦--------" + Arrays.toString(args));
-            }
-        }).on(Socket.EVENT_DISCONNECT, new Emitter.Listener() {
-            @Override
-            public void call(Object... args) {
-                logger.info("客户端断开连接啦。。。");
-                disconnection();
-                stopGetDataForServer();
-                socket.connect();
-            }
-        }).on(Socket.EVENT_RECONNECT, new Emitter.Listener() {
-            @Override
-            public void call(Object... objects) {
-                logger.info("重连中。。。");
-            }
+        socket.on(Socket.EVENT_CONNECT, args -> {
+            // 客户端一旦连接成功，开始发起登录请求
+            Log.v("v", warehouseId + "连接成功");
+            startGetDataForServer();
+
+        }).on("login", args -> {
+            Log.v("v", "接受到服务器房间广播的登录消息：" + Arrays.toString(args));
+
+        }).on(Socket.EVENT_CONNECT_ERROR, args -> {
+            Log.v("v", "Socket.EVENT_CONNECT_ERROR");
+            disconnection();
+            stopGetDataForServer();
+            socket.disconnect();
+
+        }).on(Socket.EVENT_CONNECT_TIMEOUT, args -> {
+            Log.v("v", "Socket.EVENT_CONNECT_TIMEOUT");
+            Log.v("v", Arrays.toString(args));
+            stopGetDataForServer();
+            socket.disconnect();
+
+        }).on(Socket.EVENT_PING, args -> {
+            Log.v("v", "Socket.EVENT_PING");
+
+        }).on(Socket.EVENT_PONG, args -> {
+            Log.v("v", "Socket.EVENT_PONG");
+
+        }).on(Socket.EVENT_MESSAGE, args -> {
+            Log.v("v", "-----------接受到消息啦--------" + Arrays.toString(args));
+
+        }).on(Socket.EVENT_DISCONNECT, args -> {
+            Log.v("v", "客户端断开连接啦。。。");
+            disconnection();
+            stopGetDataForServer();
+            socket.disconnect();
+
+        }).on(Socket.EVENT_RECONNECT, objects -> {
+            Log.v("v", "重连中。。。");
+
         });
+
         socket.connect();
     }
 
@@ -164,17 +126,46 @@ public class SocketClient implements Runnable {
      *
      */
     public void startGetDataForServer() {
-        if(timer == null){
+        if (timer == null) {
             timer = new Timer();
         }
-        timer.schedule(heartBeat, 5000, 1000);
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                try {
+                    socket.emit(Socket.EVENT_MESSAGE
+                            , warehouseId
+                            , (Ack) objects -> {
+                                Object[] clone = objects.clone();
+                                JSONObject jsonObject = (JSONObject) clone[0];
+                                boolean readerStatus = false;
+                                try {
+                                    readerStatus = jsonObject.getBoolean("readerStatus");
+                                    if (readerStatus) {
+                                        List<EPCTag> getData = JSON.parseArray(jsonObject.getString("tags"), EPCTag.class);
+                                        if (getData.size() > 0) {
+                                            onProgress(getData);
+                                        }
+                                        readerHeartBeatStart();
+                                    } else {
+                                        readerHeartBeatStop();
+                                    }
+                                } catch (JSONException e) {
+                                    e.printStackTrace();
+                                }
+                            });
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }, 5000, 1000);
     }
 
     /**
      *
      */
-    public void stopGetDataForServer(){
-        if(timer != null){
+    public void stopGetDataForServer() {
+        if (timer != null) {
             timer.cancel();
             timer.purge();
             timer = null;

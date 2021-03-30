@@ -59,6 +59,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     AdminDialog adminDialog;
     Button confirm;
 
+    Thread thread;
+
     //先定义
     private static final int REQUEST_EXTERNAL_STORAGE = 1;
 
@@ -102,6 +104,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 case 4:
                     homeTitle.setText(preferences.getString("mechanism_name", getString(R.string.home_title)));
                     warehouseName.setText(preferences.getString("warehouse_name", getString(R.string.warehouse_name)));
+                    thread.start();
                     break;
                 case 5:
                     gif.setBackgroundResource(R.drawable.reader_stop);
@@ -121,7 +124,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         //请求获得对应仓库信息
         sendRequestWithOkHttp();
 
-        SocketClient socketClient = new SocketClient() {
+        thread = new Thread(new SocketClient() {
             @Override
             protected void onProgress(List<EPCTag> getData) {
                 try {
@@ -153,9 +156,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             protected void readerHeartBeatStart() {
                 handler.sendEmptyMessage(2);
             }
-        };
-
-        new Thread(socketClient).start();
+        });
     }
 
     /**
@@ -333,22 +334,29 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
      * 请求成功，跳转页面，运行socket
      */
     private void sendRequestWithOkHttp() {
-        String url = "http://" + preferences.getString("ip", "192.168.1.2") + ":8980/dangan/app/getWarehouseName";
+        String url = "http://" + preferences.getString("ip", "192.168.1.100") + ":8980/dangan/app/getWarehouseName";
         RestClient.builder()
                 .url(url)
-                .raw("")
+                .raw(preferences.getString("readerIp", "192.168.1.100"))
                 .loader(this)
                 .success(response -> {
                     JSONObject resultVo = JSONObject.parseObject(response);
-                    JSONObject data = JSON.parseObject(resultVo.getString("data"));
-                    editor.putString("local", data.getString("readerIp"));
-                    editor.putString("warehouseId", data.getString("warehouseId"));
-                    editor.putString("warehouse_name", data.getString("warehouseName"));
-                    editor.putString("mechanism_name", data.getString("mechanismName"));
-                    editor.commit();
-                    handler.sendEmptyMessage(4);
+                    if (resultVo.getInteger("code") == 0) {
+                        JSONObject data = JSON.parseObject(resultVo.getString("data"));
+                        editor.putString("local", data.getString("readerIp"));
+                        editor.putString("warehouseId", data.getString("warehouseId"));
+                        editor.putString("warehouse_name", data.getString("warehouseName"));
+                        editor.putString("mechanism_name", data.getString("mechanismName"));
+                        editor.commit();
+                        handler.sendEmptyMessage(4);
+                    } else {
+                        handler.sendEmptyMessage(3);
+                    }
                 })
-                .failure(() -> Toast.makeText(MainActivity.this, "发送失败,检查网络！", Toast.LENGTH_SHORT).show())
+                .failure(() -> {
+                    Toast.makeText(MainActivity.this, "发送失败,检查网络！", Toast.LENGTH_SHORT).show();
+                    handler.sendEmptyMessage(3);
+                })
                 .error((code, msg) -> Toast.makeText(MainActivity.this, "服务器错误！" + code, Toast.LENGTH_SHORT).show())
                 .build()
                 .post();
