@@ -337,11 +337,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         String url = "http://" + preferences.getString("ip", "192.168.1.100") + ":8980/dangan/app/getWarehouseName";
         RestClient.builder()
                 .url(url)
-                .raw(preferences.getString("readerIp", "192.168.1.100"))
+                .raw(preferences.getString("local", "192.168.1.100"))
                 .loader(this)
                 .success(response -> {
                     JSONObject resultVo = JSONObject.parseObject(response);
-                    if (resultVo.getInteger("code") == 0) {
+                    int code = resultVo.getInteger("code");
+                    if (code == 0) {
                         JSONObject data = JSON.parseObject(resultVo.getString("data"));
                         editor.putString("local", data.getString("readerIp"));
                         editor.putString("warehouseId", data.getString("warehouseId"));
@@ -349,18 +350,24 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         editor.putString("mechanism_name", data.getString("mechanismName"));
                         editor.commit();
                         handler.sendEmptyMessage(4);
-                    } else {
+                    } else if (code == 400) {
+                        Toast.makeText(MainActivity.this, resultVo.getString("data"), Toast.LENGTH_SHORT).show();
+                        handler.sendEmptyMessage(3);
+                    } else if (code == 500) {
+                        Toast.makeText(MainActivity.this, resultVo.getString("data"), Toast.LENGTH_SHORT).show();
                         handler.sendEmptyMessage(3);
                     }
+
                 })
                 .failure(() -> {
                     Toast.makeText(MainActivity.this, "发送失败,检查网络！", Toast.LENGTH_SHORT).show();
                     handler.sendEmptyMessage(3);
                 })
-                .error((code, msg) -> Toast.makeText(MainActivity.this, "服务器错误！" + code, Toast.LENGTH_SHORT).show())
+                .error((code, msg) -> {
+                    Toast.makeText(MainActivity.this, "服务器错误！" + msg, Toast.LENGTH_SHORT).show();
+                })
                 .build()
                 .post();
     }
 
 }
-

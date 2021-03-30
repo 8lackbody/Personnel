@@ -9,8 +9,6 @@ import com.zht.personnel.adapter.EPCTag;
 
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.net.URISyntaxException;
 import java.util.Arrays;
@@ -45,7 +43,7 @@ public class SocketClient implements Runnable {
         options.forceNew = true;
         options.query = "warehouseId=" + warehouseId;
         try {
-            socket = IO.socket("http://" + preferences.getString("ip", "172.29.12.118") + ":9092/", options);
+            socket = IO.socket("http://" + preferences.getString("ip", "172.29.12.118") + ":9999/", options);
         } catch (URISyntaxException e) {
             disconnection();
             e.printStackTrace();
@@ -63,13 +61,14 @@ public class SocketClient implements Runnable {
             Log.v("v", "Socket.EVENT_CONNECT_ERROR");
             disconnection();
             stopGetDataForServer();
-            socket.disconnect();
+            socket.connect();
 
         }).on(Socket.EVENT_CONNECT_TIMEOUT, args -> {
             Log.v("v", "Socket.EVENT_CONNECT_TIMEOUT");
             Log.v("v", Arrays.toString(args));
             stopGetDataForServer();
-            socket.disconnect();
+            disconnection();
+            socket.connect();
 
         }).on(Socket.EVENT_PING, args -> {
             Log.v("v", "Socket.EVENT_PING");
@@ -84,7 +83,7 @@ public class SocketClient implements Runnable {
             Log.v("v", "客户端断开连接啦。。。");
             disconnection();
             stopGetDataForServer();
-            socket.disconnect();
+            socket.connect();
 
         }).on(Socket.EVENT_RECONNECT, objects -> {
             Log.v("v", "重连中。。。");
@@ -158,7 +157,7 @@ public class SocketClient implements Runnable {
                     e.printStackTrace();
                 }
             }
-        }, 5000, 1000);
+        }, 3000, 1000);
     }
 
     /**
