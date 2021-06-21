@@ -122,6 +122,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         setContentView(R.layout.activity_main);
         verifyStoragePermissions(this);
         //请求获得对应仓库信息
+        preferences = getSharedPreferences("setting", 0);
         sendRequestWithOkHttp();
 
         init();
@@ -167,7 +168,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void init() {
         //声明RecyclerView
         RecyclerView recyclerView = findViewById(R.id.home_recycler_view);
-        preferences = getSharedPreferences("setting", 0);
         editor = preferences.edit();
         number = findViewById(R.id.bottom_count2);
         homeTitle = findViewById(R.id.home_title);
@@ -339,7 +339,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         String url = "http://192.168.1.3:8980/dangan/app/getWarehouseName";
         RestClient.builder()
                 .url(url)
-                .raw(preferences.getString("local", "192.168.1.100"))
+                .raw(preferences.getString("local", "192.168.1.106"))
                 .loader(this)
                 .success(response -> {
                     JSONObject resultVo = JSONObject.parseObject(response);
