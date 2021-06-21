@@ -1,6 +1,7 @@
 package com.zht.personnel.http.ui;
 
 import android.content.Context;
+import android.util.Log;
 
 import com.wang.avi.AVLoadingIndicatorView;
 import com.wang.avi.Indicator;
@@ -36,7 +37,7 @@ public final class LoaderCreator {
             final Class<?> drawableClass = Class.forName(drawableClassName.toString());
             return (Indicator) drawableClass.newInstance();
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.e("e",e.getMessage());
             return null;
         }
     }

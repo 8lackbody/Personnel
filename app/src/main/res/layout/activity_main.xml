@@ -34,10 +34,10 @@
                 android:layout_height="100dp"
                 android:layout_weight="1"
                 android:autoSizeTextType="uniform"
+                android:autoSizeMinTextSize="3sp"
                 android:gravity="center"
                 android:text="@string/home_title"
                 android:textColor="@color/white"
-                android:textSize="62sp"
                 android:textStyle="bold" />
 
         </LinearLayout>

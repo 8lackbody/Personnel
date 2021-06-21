@@ -10,6 +10,7 @@ import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
@@ -79,7 +80,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 ActivityCompat.requestPermissions(activity, PERMISSIONS_STORAGE, REQUEST_EXTERNAL_STORAGE);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.e("e",e.getMessage());
         }
     }
 
@@ -120,9 +121,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         context = this;
         setContentView(R.layout.activity_main);
         verifyStoragePermissions(this);
-        init();
         //请求获得对应仓库信息
         sendRequestWithOkHttp();
+
+        init();
 
         thread = new Thread(new SocketClient() {
             @Override
@@ -217,7 +219,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if (v.getId() == R.id.btn_save_pop) {
             String adminPw = adminDialog.adminPw.getText().toString().trim();
             System.out.println(adminPw);
-            if ("jisheng".equals(adminPw)) {
+            if ("bainiu".equals(adminPw)) {
                 adminDialog.dismiss();
                 Intent intent = new Intent(this, LoginActivity.class);
                 startActivity(intent);
@@ -334,7 +336,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
      * 请求成功，跳转页面，运行socket
      */
     private void sendRequestWithOkHttp() {
-        String url = "http://" + preferences.getString("ip", "192.168.1.100") + ":8980/dangan/app/getWarehouseName";
+        String url = "http://192.168.1.3:8980/dangan/app/getWarehouseName";
         RestClient.builder()
                 .url(url)
                 .raw(preferences.getString("local", "192.168.1.100"))

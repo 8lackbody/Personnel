@@ -15,7 +15,6 @@ import androidx.appcompat.app.AppCompatActivity;
 public class LoginActivity extends AppCompatActivity {
 
     private EditText androidIp;
-    private EditText serverIp;
     private Button button;
     private String check = "^((25[0-5]|2[0-4]\\d|[1]{1}\\d{1}\\d{1}|[1-9]{1}\\d{1}|\\d{1})($|(?!\\.$)\\.)){4}$";
     SharedPreferences settings;
@@ -44,7 +43,6 @@ public class LoginActivity extends AppCompatActivity {
 
         //给输入框添加字符限制
         androidIp.setKeyListener(listener);
-        serverIp.setKeyListener(listener);
 
         button.setOnClickListener(this::onClick);
     }
@@ -56,16 +54,14 @@ public class LoginActivity extends AppCompatActivity {
      */
     public boolean checkInputData() {
         String androidIpString = androidIp.getText().toString();
-        String serverIpString = serverIp.getText().toString();
-        if (androidIpString.equals("") || serverIpString.equals("")) {
+        if (androidIpString.equals("")) {
             Toast.makeText(this, "不能为空", Toast.LENGTH_LONG).show();
             return false;
         }
-        if (!(serverIpString.matches(check) && androidIpString.matches(check))) {
+        if (!(androidIpString.matches(check))) {
             Toast.makeText(this, "输入IP格式有误", Toast.LENGTH_LONG).show();
             return false;
         }
-        editor.putString("ip", serverIpString);
         editor.putString("local", androidIpString);
         editor.commit();
 
@@ -83,9 +79,7 @@ public class LoginActivity extends AppCompatActivity {
 
     public void init() {
         androidIp = findViewById(R.id.editText);
-        serverIp = findViewById(R.id.editText2);
 
-        serverIp.setText(settings.getString("ip", "192.168.1.4"));
         androidIp.setText(settings.getString("local", "192.168.1.100"));
 
         button = findViewById(R.id.button);

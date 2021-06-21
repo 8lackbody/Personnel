@@ -46,13 +46,13 @@ public class SocketClient implements Runnable {
             socket = IO.socket("http://" + preferences.getString("ip", "172.29.12.118") + ":9999/", options);
         } catch (URISyntaxException e) {
             disconnection();
-            e.printStackTrace();
+            Log.e("e",e.getMessage());
         }
 
         socket.on(Socket.EVENT_CONNECT, args -> {
             // 客户端一旦连接成功，开始发起登录请求
             Log.v("v", warehouseId + "连接成功");
-            startGetDataForServer();
+            startGetDataFromServer();
 
         }).on("login", args -> {
             Log.v("v", "接受到服务器房间广播的登录消息：" + Arrays.toString(args));
@@ -124,7 +124,7 @@ public class SocketClient implements Runnable {
     /**
      *
      */
-    public void startGetDataForServer() {
+    public void startGetDataFromServer() {
         if (timer == null) {
             timer = new Timer();
         }
@@ -137,9 +137,8 @@ public class SocketClient implements Runnable {
                             , (Ack) objects -> {
                                 Object[] clone = objects.clone();
                                 JSONObject jsonObject = (JSONObject) clone[0];
-                                boolean readerStatus = false;
                                 try {
-                                    readerStatus = jsonObject.getBoolean("readerStatus");
+                                    boolean readerStatus = jsonObject.getBoolean("readerStatus");
                                     if (readerStatus) {
                                         List<EPCTag> getData = JSON.parseArray(jsonObject.getString("tags"), EPCTag.class);
                                         if (getData.size() > 0) {
@@ -148,16 +147,17 @@ public class SocketClient implements Runnable {
                                         readerHeartBeatStart();
                                     } else {
                                         readerHeartBeatStop();
+                                        Log.e("e","reader stop");
                                     }
                                 } catch (JSONException e) {
-                                    e.printStackTrace();
+                                    Log.e("e",e.getMessage());
                                 }
                             });
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    Log.e("e",e.getMessage());
                 }
             }
-        }, 3000, 1000);
+        }, 2000, 1000);
     }
 
     /**
