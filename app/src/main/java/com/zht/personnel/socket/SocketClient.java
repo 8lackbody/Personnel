@@ -43,7 +43,7 @@ public class SocketClient implements Runnable {
         options.forceNew = true;
         options.query = "warehouseId=" + warehouseId;
         try {
-            socket = IO.socket("http://" + preferences.getString("ip", "172.29.12.118") + ":9999/", options);
+            socket = IO.socket("http://192.168.1.3:9999/", options);
         } catch (URISyntaxException e) {
             disconnection();
             Log.e("e",e.getMessage());
