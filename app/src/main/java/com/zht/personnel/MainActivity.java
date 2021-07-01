@@ -30,6 +30,7 @@ import com.zht.personnel.adapter.HomeRecycleAdapter;
 import com.zht.personnel.http.net.RestClient;
 import com.zht.personnel.socket.MyLog;
 import com.zht.personnel.socket.SocketClient;
+import com.zht.personnel.socket.UrlConfig;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -336,9 +337,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
      * 请求成功，跳转页面，运行socket
      */
     private void sendRequestWithOkHttp() {
-        String url = "http://192.168.1.3:8980/dangan/app/getWarehouseName";
         RestClient.builder()
-                .url(url)
+                .url(UrlConfig.URL_GETHOUSENAME)
                 .raw(preferences.getString("local", "192.168.1.106"))
                 .loader(this)
                 .success(response -> {

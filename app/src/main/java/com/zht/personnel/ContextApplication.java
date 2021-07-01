@@ -5,6 +5,8 @@ import android.content.Context;
 
 public class ContextApplication extends Application {
 
+    public final static String VERSION = "2.1.0";
+
     private static Context context;
 
     @Override
